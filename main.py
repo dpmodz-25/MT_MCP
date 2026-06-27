@@ -8,7 +8,7 @@ from app import start_server
 start_server()
 
 # 1. Konfigurasi Kunci Akses (Gunakan Environment Variables)
-TELEGRAM_TOKEN = "8607503824:AAFcTeDfwQ3AgKxxONOPdPZScAqHa_DUm6o"
+TELEGRAM_TOKEN = "8607503824:AAEvECrjkQo_GlJQ09_xVtohGMAjbSxOqas"
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # ID Pemilik Bot Anda
