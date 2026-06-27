@@ -1,4 +1,3 @@
-python-telegram-bot==20.8
+pyTelegramBotAPI
 google-genai
-androguard==4.1.1
-pyaxmlparser==0.3.29
+flask
