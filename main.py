@@ -53,8 +53,8 @@ def handle_document(message):
         with open(local_filename, 'wb') as new_file:
             new_file.write(downloaded_file)
             
-        # Pengecekan Ekstensi File
-        file_extension = os.path.splitext(local_filename).lower()
+        # PERBAIKAN: Ambil indeks [1] dari tuple untuk mendapatkan string ekstensi file
+        file_extension = os.path.splitext(local_filename)[1].lower()
         
         # JIKA FILE ADALAH APK, EKSTRAK STRUKTUR FILE-NYA TERLEBIH DAHULU
         if file_extension == '.apk':
@@ -74,7 +74,6 @@ def handle_document(message):
                 
                 user_instruction = message.caption if message.caption else "Analisis struktur dan potensi kerentanan aplikasi ini."
                 
-                # Menggunakan model gemini-2.0-flash yang lebih stabil dari kendala overload
                 response = ai_client.models.generate_content(
                     model='gemini-2.0-flash',
                     contents=[apk_structure_text, f"Lakukan reverse engineering pada struktur APK ini. Fokus instruksi: {user_instruction}"],
@@ -90,7 +89,6 @@ def handle_document(message):
         else:
             bot.edit_message_text("🧠 Mengunggah kode sumber ke Sandbox Gemini AI...", message.chat.id, sent_msg.message_id)
             
-            # Paksa MIME type menjadi text/plain untuk ekstensi custom seperti .smali agar aman diterima Gemini
             gemini_file = ai_client.files.upload(
                 file=local_filename,
                 config=types.UploadFileConfig(display_name=local_filename, mime_type="text/plain")
@@ -100,7 +98,6 @@ def handle_document(message):
             
             user_instruction = message.caption if message.caption else "Bedah fungsionalitas kodenya."
             
-            # Menggunakan model gemini-2.0-flash yang lebih stabil dari kendala overload
             response = ai_client.models.generate_content(
                 model='gemini-2.0-flash',
                 contents=[gemini_file, f"Lakukan reverse engineering pada file teks {local_filename} ini. Fokus pada instruksi pengguna berikut: {user_instruction}"],
@@ -124,7 +121,6 @@ def handle_text(message):
     if not is_owner(message): return
     sent_msg = bot.reply_to(message, "🧠 Memproses analisis teks...")
     try:
-        # Menggunakan model gemini-2.0-flash yang lebih stabil dari kendala overload
         response = ai_client.models.generate_content(
             model='gemini-2.0-flash',
             contents=message.text,
