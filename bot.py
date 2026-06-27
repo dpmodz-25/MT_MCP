@@ -7,8 +7,8 @@ from google.genai import types
 from pyaxmlparser import APK
 
 # AMBIL KUNCI RAHASIA DARI ENVIRONMENT VARIABLES SERVER (UNTUK KEAMANAN)
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+TELEGRAM_TOKEN = os.environ.get("8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0")
+GEMINI_API_KEY = os.environ.get("AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA")
 
 if not TELEGRAM_TOKEN or not GEMINI_API_KEY:
     print("❌ ERROR: TELEGRAM_TOKEN atau GEMINI_API_KEY belum di-setting!")
