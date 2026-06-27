@@ -5,8 +5,8 @@ from google.genai import types
 from app import start_server
 
 # 1. Konfigurasi Token (Diambil aman dari Environment Variables Render)
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+TELEGRAM_TOKEN = os.environ.get("8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0")
+GEMINI_API_KEY = os.environ.get("AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA")
 # MASUKKAN CHAT ID TELEGRAM ANDA AGAR BOT TIDAK DIALAHGUNAKAN ORANG LAIN
 # Cara tahu ID: Kirim pesan ke bot @userinfobot di Telegram
 OWNER_CHAT_ID = 123456789  # Ganti dengan angka Chat ID Anda asli
