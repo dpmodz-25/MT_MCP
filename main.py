@@ -33,7 +33,7 @@ def send_welcome(message):
     text = "🤖 **Sandbox AI Cloud Aktif!**\n\nKirimkan pesan teks atau lampiran file (.apk, .txt, .smali, .py) untuk dianalisis."
     bot.reply_to(message, text, parse_mode='Markdown')
 
-# --- PERBAIKAN TOTAL: HANDLING FILE VIA TELEBOT + BYPASS APK BLOCK ---
+# --- HANDLER DOKUMEN VIA JALUR RESMI TELEBOT + BYPASS APK BLOCK ---
 @bot.message_handler(content_types=['document'])
 def handle_document(message):
     if not is_owner(message): return
@@ -54,7 +54,7 @@ def handle_document(message):
             new_file.write(downloaded_file)
             
         # Pengecekan Ekstensi File
-        file_extension = os.path.splitext(local_filename)[1].lower()
+        file_extension = os.path.splitext(local_filename).lower()
         
         # JIKA FILE ADALAH APK, EKSTRAK STRUKTUR FILE-NYA TERLEBIH DAHULU
         if file_extension == '.apk':
@@ -74,8 +74,9 @@ def handle_document(message):
                 
                 user_instruction = message.caption if message.caption else "Analisis struktur dan potensi kerentanan aplikasi ini."
                 
+                # Menggunakan model gemini-2.0-flash yang lebih stabil dari kendala overload
                 response = ai_client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-2.0-flash',
                     contents=[apk_structure_text, f"Lakukan reverse engineering pada struktur APK ini. Fokus instruksi: {user_instruction}"],
                     config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION, temperature=0.2)
                 )
@@ -99,8 +100,9 @@ def handle_document(message):
             
             user_instruction = message.caption if message.caption else "Bedah fungsionalitas kodenya."
             
+            # Menggunakan model gemini-2.0-flash yang lebih stabil dari kendala overload
             response = ai_client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-2.0-flash',
                 contents=[gemini_file, f"Lakukan reverse engineering pada file teks {local_filename} ini. Fokus pada instruksi pengguna berikut: {user_instruction}"],
                 config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION, temperature=0.2)
             )
@@ -116,13 +118,15 @@ def handle_document(message):
         if 'local_filename' in locals() and os.path.exists(local_filename):
             os.remove(local_filename)
 
+# --- HANDLER PESAN TEKS ---
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
     if not is_owner(message): return
     sent_msg = bot.reply_to(message, "🧠 Memproses analisis teks...")
     try:
+        # Menggunakan model gemini-2.0-flash yang lebih stabil dari kendala overload
         response = ai_client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-2.0-flash',
             contents=message.text,
             config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION, temperature=0.2)
         )
