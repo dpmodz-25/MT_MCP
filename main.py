@@ -1,11 +1,16 @@
 import os
 import telebot
+import os
+import telebot
 import zipfile  # Digunakan untuk membaca struktur berkas di dalam APK
+import threading  # PERBAIKAN: Untuk menjalankan Flask di latar belakang
 from groq import Groq  # Pustaka baru untuk menghubungkan ke Groq Cloud
 from app import start_server
 
-# Jalankan server Flask paling awal untuk Render
-start_server()
+# PERBAIKAN: Jalankan server Flask di thread latar belakang agar tidak memblokir bot
+flask_thread = threading.Thread(target=start_server)
+flask_thread.daemon = True
+flask_thread.start()
 
 # 1. Konfigurasi Kunci Akses (Gunakan Environment Variables)
 TELEGRAM_TOKEN = "8607503824:AAHB4cVhia6jQm3TEnq0z22Q75syhtsbUXQ"
