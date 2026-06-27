@@ -1,5 +1,6 @@
 import os
 import telebot
+import requests
 from google import genai
 from google.genai import types
 from app import start_server
@@ -7,14 +8,14 @@ from app import start_server
 # Jalankan server Flask paling awal untuk Render
 start_server()
 
-# 1. Cara pemasangan Token & API Key yang benar (Langsung dimasukkan ke variabel)
+# 1. Konfigurasi Kunci Akses (Token diperbarui berdasarkan permintaan Anda)
 TELEGRAM_TOKEN = "8607503824:AAH-JrEMPRkzXMYW62w4YrPpn_hOKlhF9Vw"
 GEMINI_API_KEY = "AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA"
 
-# ID Pemilik Bot
+# ID Pemilik Bot Anda
 OWNER_CHAT_ID = 1209820269  
 
-# 2. Inisialisasi library dengan format parameter Python yang benar
+# 2. Inisialisasi Pustaka
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 ai_client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -32,40 +33,58 @@ def send_welcome(message):
     text = "🤖 **Sandbox AI Cloud Aktif!**\n\nKirimkan pesan teks atau lampiran file (.apk, .txt, .smali, .py) untuk dianalisis."
     bot.reply_to(message, text, parse_mode='Markdown')
 
+# --- PERBAIKAN HANDLING DOKUMEN / APK (ANTI-MACET & HEMAT RAM) ---
 @bot.message_handler(content_types=['document'])
 def handle_document(message):
     if not is_owner(message): return
-    sent_msg = bot.reply_to(message, "📥 *Mengunduh file dari Telegram...*", parse_mode='Markdown')
+    
+    # Gunakan teks biasa di awal untuk menghindari error transmisi akibat Markdown menggantung
+    sent_msg = bot.reply_to(message, "📥 Sedang mengunduh file dari Telegram...")
+    
     try:
         file_info = bot.get_file(message.document.file_id)
-        downloaded_file = bot.download_file(file_info.file_path)
+        file_path = file_info.file_path
+        file_url = f"https://telegram.org{bot.token}/{file_path}"
         
         local_filename = message.document.file_name
-        with open(local_filename, 'wb') as new_file:
-            new_file.write(downloaded_file)
-            
-        bot.edit_message_text("🧠 *Mengunggah file ke Sandbox Gemini AI...*", message.chat.id, sent_msg.message_id, parse_mode='Markdown')
         
+        bot.edit_message_text("💾 Menulis file ke dalam sandbox server...", message.chat.id, sent_msg.message_id)
+        
+        # Optimalisasi RAM: Mengunduh file secara bertahap (chunk) agar RAM Render tidak penuh
+        with requests.get(file_url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+        bot.edit_message_text("🧠 Mengunggah biner ke Sandbox Gemini AI...", message.chat.id, sent_msg.message_id)
+        
+        # Mengunggah biner ke infrastruktur Gemini Files API
         gemini_file = ai_client.files.upload(
             file=local_filename,
             config=types.UploadFileConfig(display_name=local_filename)
         )
         
-        bot.edit_message_text("⚡ *Menganalisis struktur file & logika kode biner...*", message.chat.id, sent_msg.message_id, parse_mode='Markdown')
+        bot.edit_message_text("⚡ Gemini sedang membedah kode biner aplikasi Anda...", message.chat.id, sent_msg.message_id)
+        
+        # Membaca caption tambahan jika ada (misal: "Check class MainActivity")
+        user_instruction = message.caption if message.caption else "Bedah fungsionalitas kodenya."
         
         response = ai_client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=[gemini_file, f"Lakukan reverse engineering pada file {local_filename} ini. Bedah fungsionalitas kodenya."],
+            contents=[gemini_file, f"Lakukan reverse engineering pada file biner {local_filename} ini. Fokus pada instruksi pengguna berikut: {user_instruction}"],
             config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION, temperature=0.2)
         )
         
-        bot.edit_message_text(response.text, message.chat.id, sent_msg.message_id, parse_mode='Markdown')
+        # Mengirimkan hasil analisis (Markdown dimatikan pada hasil teks panjang agar tidak pecah/eror di Telegram)
+        bot.edit_message_text(response.text, message.chat.id, sent_msg.message_id)
         
+        # Menghapus berkas sampah di server lokal Render setelah selesai
         if os.path.exists(local_filename):
             os.remove(local_filename)
             
     except Exception as e:
-        bot.edit_message_text(f"❌ *Gagal memproses file:* `{str(e)}`", message.chat.id, sent_msg.message_id, parse_mode='Markdown')
+        bot.edit_message_text(f"❌ Gagal memproses file. Error: {str(e)}", message.chat.id, sent_msg.message_id)
 
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
