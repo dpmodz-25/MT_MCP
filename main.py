@@ -4,7 +4,7 @@ import zipfile  # Digunakan untuk membaca struktur berkas di dalam APK
 from groq import Groq  # Pustaka untuk menghubungkan ke Groq Cloud
 
 # 1. Konfigurasi Kunci Akses (Gunakan Environment Variables)
-TELEGRAM_TOKEN = "8607503824:AAHB4cVhia6jQm3TEnq0z22Q75syhtsbUXQ"
+TELEGRAM_TOKEN = "8607503824:AAHq5S9uXD0-6YwxD5zrpmGRBOKADDcNiBQ"
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # ID Pemilik Bot Anda
