@@ -8,14 +8,14 @@ from app import start_server
 # Jalankan server Flask paling awal untuk Render
 start_server()
 
-# 1. Konfigurasi Kunci Akses (Token diperbarui berdasarkan permintaan Anda)
+# AMBIL SECARA AMAN DARI ENVIRONMENT VARIABLES RENDER (ANTI-BOCOR)
 TELEGRAM_TOKEN = "8607503824:AAH-JrEMPRkzXMYW62w4YrPpn_hOKlhF9Vw"
-GEMINI_API_KEY = "AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ID Pemilik Bot Anda
 OWNER_CHAT_ID = 1209820269  
 
-# 2. Inisialisasi Pustaka
+# Inisialisasi library
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 ai_client = genai.Client(api_key=GEMINI_API_KEY)
 
