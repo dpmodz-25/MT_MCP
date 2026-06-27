@@ -1,5 +1,6 @@
 import os
 import telebot
+import zipfile  # Digunakan untuk membaca manifes dari dalam APK jika dikirim
 from google import genai
 from google.genai import types
 from app import start_server
@@ -32,7 +33,7 @@ def send_welcome(message):
     text = "🤖 **Sandbox AI Cloud Aktif!**\n\nKirimkan pesan teks atau lampiran file (.apk, .txt, .smali, .py) untuk dianalisis."
     bot.reply_to(message, text, parse_mode='Markdown')
 
-# --- PERBAIKAN TOTAL: DOWNLOAD DOKUMEN VIA JALUR RESMI TELEBOT ---
+# --- PERBAIKAN TOTAL: HANDLING FILE VIA TELEBOT + BYPASS APK BLOCK ---
 @bot.message_handler(content_types=['document'])
 def handle_document(message):
     if not is_owner(message): return
@@ -43,43 +44,77 @@ def handle_document(message):
         # Ambil informasi berkas dari Telegram
         file_info = bot.get_file(message.document.file_id)
         
-        bot.edit_message_text("💾 Mengunduh biner secara aman ke server sandbox...", message.chat.id, sent_msg.message_id)
+        bot.edit_message_text("💾 Mengunduh file secara aman ke server sandbox...", message.chat.id, sent_msg.message_id)
         
-        # Jalur resmi download_file bawaan pyTelegramBotAPI (Anti-Gagal URL)
+        # Jalur resmi download_file bawaan pyTelegramBotAPI
         downloaded_file = bot.download_file(file_info.file_path)
         
         local_filename = message.document.file_name
         with open(local_filename, 'wb') as new_file:
             new_file.write(downloaded_file)
             
-        bot.edit_message_text("🧠 Mengunggah biner ke Sandbox Gemini AI...", message.chat.id, sent_msg.message_id)
+        # Pengecekan Ekstensi File
+        file_extension = os.path.splitext(local_filename)[1].lower()
         
-        # Mengunggah berkas ke Gemini File Storage
-        gemini_file = ai_client.files.upload(
-            file=local_filename,
-            config=types.UploadFileConfig(display_name=local_filename)
-        )
-        
-        bot.edit_message_text("⚡ Gemini sedang membedah kode biner aplikasi Anda...", message.chat.id, sent_msg.message_id)
-        
-        # Membaca takarir pengguna jika ada
-        user_instruction = message.caption if message.caption else "Bedah fungsionalitas kodenya."
-        
-        response = ai_client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[gemini_file, f"Lakukan reverse engineering pada file biner {local_filename} ini. Fokus pada instruksi pengguna berikut: {user_instruction}"],
-            config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION, temperature=0.2)
-        )
-        
-        # Kirimkan teks laporan akhir tanpa parse_mode agar karakter biner dari AI tidak merusak layout chat
-        bot.edit_message_text(response.text, message.chat.id, sent_msg.message_id)
-        
-        # Hapus berkas setelah selesai diproses agar server tetap bersih
+        # JIKA FILE ADALAH APK, EKSTRAK STRUKTUR FILE-NYA TERLEBIH DAHULU
+        if file_extension == '.apk':
+            bot.edit_message_text("📦 Mendekompilasi struktur berkas APK Anda...", message.chat.id, sent_msg.message_id)
+            
+            try:
+                # Membaca daftar isi file di dalam APK (APK adalah file ZIP)
+                with zipfile.ZipFile(local_filename, 'r') as zip_ref:
+                    file_list = zip_ref.namelist()
+                
+                # Mengubah daftar file menjadi teks agar bisa dianalisis Gemini
+                apk_structure_text = f"Analisis Struktur APK: {local_filename}\n\nDaftar file di dalam paket:\n" + "\n".join(file_list[:100])
+                if len(file_list) > 100:
+                    apk_structure_text += f"\n... dan {len(file_list) - 100} file lainnya."
+                
+                bot.edit_message_text("⚡ Gemini sedang membedah arsitektur APK Anda...", message.chat.id, sent_msg.message_id)
+                
+                user_instruction = message.caption if message.caption else "Analisis struktur dan potensi kerentanan aplikasi ini."
+                
+                response = ai_client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=[apk_structure_text, f"Lakukan reverse engineering pada struktur APK ini. Fokus instruksi: {user_instruction}"],
+                    config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION, temperature=0.2)
+                )
+                
+                bot.edit_message_text(response.text, message.chat.id, sent_msg.message_id)
+                
+            except zipfile.BadZipFile:
+                bot.edit_message_text("❌ File APK rusak atau tidak valid sebagai arsip ZIP.", message.chat.id, sent_msg.message_id)
+                
+        # JIKA FILE ADALAH TEKS/KODE (TXT, PY, SMALI, DLL)
+        else:
+            bot.edit_message_text("🧠 Mengunggah kode sumber ke Sandbox Gemini AI...", message.chat.id, sent_msg.message_id)
+            
+            # Paksa MIME type menjadi text/plain untuk ekstensi custom seperti .smali agar aman diterima Gemini
+            gemini_file = ai_client.files.upload(
+                file=local_filename,
+                config=types.UploadFileConfig(display_name=local_filename, mime_type="text/plain")
+            )
+            
+            bot.edit_message_text("⚡ Gemini sedang membedah kode program Anda...", message.chat.id, sent_msg.message_id)
+            
+            user_instruction = message.caption if message.caption else "Bedah fungsionalitas kodenya."
+            
+            response = ai_client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[gemini_file, f"Lakukan reverse engineering pada file teks {local_filename} ini. Fokus pada instruksi pengguna berikut: {user_instruction}"],
+                config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION, temperature=0.2)
+            )
+            
+            bot.edit_message_text(response.text, message.chat.id, sent_msg.message_id)
+            
+        # Bersihkan file dari lokal server setelah selesai diproses
         if os.path.exists(local_filename):
             os.remove(local_filename)
             
     except Exception as e:
         bot.edit_message_text(f"❌ Gagal memproses file. Error: {str(e)}", message.chat.id, sent_msg.message_id)
+        if 'local_filename' in locals() and os.path.exists(local_filename):
+            os.remove(local_filename)
 
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
