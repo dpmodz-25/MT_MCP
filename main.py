@@ -44,7 +44,9 @@ def handle_document(message):
     try:
         file_info = bot.get_file(message.document.file_id)
         file_path = file_info.file_path
-        file_url = f"https://telegram.org{bot.token}/{file_path}"
+                # Tautan resmi dan mutlak untuk mengunduh berkas API Telegram
+        file_url = f"https://telegram.org{TELEGRAM_TOKEN}/{file_path}"
+
         
         local_filename = message.document.file_name
         
