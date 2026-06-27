@@ -8,7 +8,7 @@ from app import start_server
 start_server()
 
 # 1. Cara pemasangan Token & API Key yang benar (Langsung dimasukkan ke variabel)
-TELEGRAM_TOKEN = "8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0"
+TELEGRAM_TOKEN = "8607503824:AAH-JrEMPRkzXMYW62w4YrPpn_hOKlhF9Vw"
 GEMINI_API_KEY = "AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA"
 
 # ID Pemilik Bot
