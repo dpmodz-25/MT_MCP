@@ -9,7 +9,7 @@ from app import start_server
 start_server()
 
 # 1. Konfigurasi Kunci Akses (Gunakan API Key Gemini dari Environment Variables)
-TELEGRAM_TOKEN = "8607503824:AAGlyGQFkaOUtmfGQMFgq6VOkycIsRmDHB0"
+TELEGRAM_TOKEN = "8607503824:AAEvECrjkQo_GlJQ09_xVtohGMAjbSxOqas"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ID Pemilik Bot Anda
