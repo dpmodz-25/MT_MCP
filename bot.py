@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from google import genai
 from google.genai import types
-from androguard.core.bytecodes.apk import APK
+from androguard import APK
 
 # AMBIL KUNCI RAHASIA DARI SERVER
 TELEGRAM_TOKEN = os.environ.get("8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0")
