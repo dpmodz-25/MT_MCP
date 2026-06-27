@@ -20,8 +20,8 @@ GEMINI_API_KEY = str(GEMINI_ENV).strip()
 OWNER_CHAT_ID = 1209820269  
 
 # Inisialisasi library menggunakan token string yang sudah dibersihkan
-bot = telebot.TeleBot(8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0)
-ai_client = genai.Client(api_key=AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA)
+bot = telebot.TeleBot("8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0")
+ai_client = genai.Client("api_key=AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA")
 
 SYSTEM_INSTRUCTION = """
 Anda adalah asisten AI Sandbox untuk Reverse Engineering. Tugas Anda adalah menganalisis file, kode, 
