@@ -7,21 +7,16 @@ from app import start_server
 # Jalankan server Flask paling awal untuk Render
 start_server()
 
-# Mengambil token dengan aman dari environment variables
-# Menggunakan str() untuk memastikan tipe data adalah String teks
-TOKEN_ENV = os.environ.get("8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0", "")
-GEMINI_ENV = os.environ.get("AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA", "")
+# 1. Cara pemasangan Token & API Key yang benar (Langsung dimasukkan ke variabel)
+TELEGRAM_TOKEN = "8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0"
+GEMINI_API_KEY = "AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA"
 
-# Bersihkan karakter aneh jika ada spasi yang tidak sengaja tersalin
-TELEGRAM_TOKEN = str(TOKEN_ENV).strip()
-GEMINI_API_KEY = str(GEMINI_ENV).strip()
-
-# ⚠️ GANTI ANGKA DI BAWAH INI DENGAN CHAT ID TELEGRAM ANDA ASLI!
+# ID Pemilik Bot
 OWNER_CHAT_ID = 1209820269  
 
-# Inisialisasi library menggunakan token string yang sudah dibersihkan
-bot = telebot.TeleBot("8607503824:AAGZlV1J0oi0o_NEjllTxjc11E8Jc6cDFd0")
-ai_client = genai.Client("api_key=AQ.Ab8RN6JWLV9wcS8Ao-iSSTCLMDiFwZlDrqWdWfyEpC2onC-ANA")
+# 2. Inisialisasi library dengan format parameter Python yang benar
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+ai_client = genai.Client(api_key=GEMINI_API_KEY)
 
 SYSTEM_INSTRUCTION = """
 Anda adalah asisten AI Sandbox untuk Reverse Engineering. Tugas Anda adalah menganalisis file, kode, 
